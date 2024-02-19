@@ -24,7 +24,7 @@ function getData() {
   const url = `https://random-data-api.com/api/v2/users?size=${size}`;
   caches.match("users.json").then((cachedResponse) => {
     if (cachedResponse) {
-      console.log("Found users.json in cache");
+      // console.log("Found users.json in cache");
       return cachedResponse.json().then((data) => {
         userList.innerHTML = "";
         data.forEach((user) => {
@@ -37,7 +37,7 @@ function getData() {
           if (!response.ok) {
             throw new Error(`Network response was not ok`);
           }
-          console.log("Fetch from main.js", response);
+          // console.log("Fetch made from main.js", response);
           return response.json();
         })
         .then((data) => {
@@ -47,9 +47,8 @@ function getData() {
           });
         })
         .catch((err) => {
-          console.error("Fetching Error from main.js", err);
+          console.error("Fetch Error from main.js", err);
         });
-      return cachedResponse.json();
     }
   });
 }

@@ -58,11 +58,11 @@ self.addEventListener("fetch", (ev) => {
   } else if (isUserData) {
     ev.respondWith(
       caches.match(request).then((cachedResponse) => {
-        console.log("SW found USERDATA in cache: ", request);
+        // console.log("SW found USERDATA in cache: ", request);
         return (
           cachedResponse ||
           fetch(request).then((fetchResponse) => {
-            console.log("SW: put in cache: ", request);
+            // console.log("SW put USERDATA in cache: ", request);
             return caches.open(cacheName).then((cache) => {
               cache.put("users.json", fetchResponse.clone());
               return fetchResponse;
