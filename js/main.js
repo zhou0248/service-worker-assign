@@ -27,6 +27,7 @@ function getData() {
       if (!response.ok) {
         throw new Error(`Network response was not ok`);
       }
+      console.log("Fetch from main.js", response);
       return response.json();
     })
     .then((data) => {

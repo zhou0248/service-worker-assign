@@ -37,7 +37,7 @@ self.addEventListener("fetch", (ev) => {
   if (isStatic) {
     ev.respondWith(
       caches.match(request).then((cachedResponse) => {
-        // console.log("found in cache: ", request);
+        // console.log("found STATIC in cache: ", request);
         return (
           cachedResponse ||
           fetch(request).then((fetchResponse) => {
@@ -57,16 +57,16 @@ self.addEventListener("fetch", (ev) => {
     );
   } else if (isUserData) {
     ev.respondWith(
-      caches.match("user.json").then((cachedResponse) => {
-        // console.log("found in cache: ", request);
+      caches.match(request).then((cachedResponse) => {
+        console.log("found USERDATA in cache: ", request);
         return (
           cachedResponse ||
           fetch(request).then((fetchResponse) => {
             console.log("put in cache: ", request);
             caches.open(cacheName).then((cache) => {
               cache.put("users.json", fetchResponse.clone());
-              return fetchResponse;
             });
+            return fetchResponse;
           })
         );
       })
