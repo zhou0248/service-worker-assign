@@ -22,23 +22,36 @@ function registerSW() {
 function getData() {
   let size = 20;
   const url = `https://random-data-api.com/api/v2/users?size=${size}`;
-  fetch(url, { method: "GET", credentials: "omit" })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`Network response was not ok`);
-      }
-      console.log("Fetch from main.js", response);
-      return response.json();
-    })
-    .then((data) => {
-      userList.innerHTML = "";
-      data.forEach((user) => {
-        showCards(user);
+  caches.match("users.json").then((cachedResponse) => {
+    if (cachedResponse) {
+      console.log("Found users.json in cache");
+      return cachedResponse.json().then((data) => {
+        userList.innerHTML = "";
+        data.forEach((user) => {
+          showCards(user);
+        });
       });
-    })
-    .catch((err) => {
-      console.error("Fetching Error from main.js", err);
-    });
+    } else {
+      fetch(url, { method: "GET", credentials: "omit" })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Network response was not ok`);
+          }
+          console.log("Fetch from main.js", response);
+          return response.json();
+        })
+        .then((data) => {
+          userList.innerHTML = "";
+          data.forEach((user) => {
+            showCards(user);
+          });
+        })
+        .catch((err) => {
+          console.error("Fetching Error from main.js", err);
+        });
+      return cachedResponse.json();
+    }
+  });
 }
 
 function handleCardClicks() {}
