@@ -1,11 +1,12 @@
-const version = "1";
+const version = "4";
 const cacheName = `Aiting-${version}`;
-const staticItems = ["./css/main.css", "./js/main.js", "./index.html"];
+const staticItems = ["./", "./css/main.css", "./js/main.js", "./index.html"];
 
 self.addEventListener("install", (ev) => {
   //cache static files, if needed
   ev.waitUntil(
     caches.open(cacheName).then((cache) => {
+      // console.log("static items have been updated");
       return cache.addAll(staticItems);
     })
   );
@@ -17,6 +18,7 @@ self.addEventListener("activate", (ev) => {
     caches.keys().then((keys) => {
       return Promise.all(
         keys.filter((key) => key !== cacheName).map((key) => caches.delete(key))
+        // gives us an array of promises
       );
     })
   );
@@ -31,16 +33,43 @@ self.addEventListener("fetch", (ev) => {
     url.pathname.includes(".css") ||
     url.pathname.includes(".js") ||
     url.pathname.includes(".html");
-  console.log(`fetch request for ${url}, ${isStatic}`);
+  // console.log(`fetch request for ${url}, ${isStatic}`);
   if (isStatic) {
     ev.respondWith(
       caches.match(request).then((cachedResponse) => {
-        return cachedResponse || fetch(request);
+        // console.log("found in cache: ", request);
+        return (
+          cachedResponse ||
+          fetch(request).then((fetchResponse) => {
+            if (!fetchResponse.ok) {
+              throw new Error(
+                "Fetch Error from SW: ",
+                fetchResponse.statusText
+              );
+            }
+            return caches.open(cacheName).then((cache) => {
+              cache.put(request, fetchResponse.clone());
+              return fetchResponse;
+            });
+          })
+        );
       })
     );
   } else if (isUserData) {
     ev.respondWith(
-      fetch(url, { method: "GET", credentials: "omit" }).catch(return404)
+      caches.match("user.json").then((cachedResponse) => {
+        // console.log("found in cache: ", request);
+        return (
+          cachedResponse ||
+          fetch(request).then((fetchResponse) => {
+            console.log("put in cache: ", request);
+            caches.open(cacheName).then((cache) => {
+              cache.put("users.json", fetchResponse.clone());
+              return fetchResponse;
+            });
+          })
+        );
+      })
     );
   } else {
     ev.respondWith(fetch(request).catch(return404));

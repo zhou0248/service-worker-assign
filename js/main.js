@@ -19,23 +19,25 @@ function registerSW() {
   });
 }
 
-async function getData() {
+function getData() {
   let size = 20;
   const url = `https://random-data-api.com/api/v2/users?size=${size}`;
-  try {
-    const response = await fetch(url, { method: "GET", credentials: "omit" });
-
-    if (!response.ok) {
-      throw new Error(`Network response was not ok`);
-    }
-    const data = await response.json();
-    userList.innerHTML = "";
-    data.forEach((user) => {
-      showCards(user);
+  fetch(url, { method: "GET", credentials: "omit" })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`Network response was not ok`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      userList.innerHTML = "";
+      data.forEach((user) => {
+        showCards(user);
+      });
+    })
+    .catch((err) => {
+      console.error("Fetching Error from main.js", err);
     });
-  } catch (err) {
-    console.error("Error fetching data", err);
-  }
 }
 
 function handleCardClicks() {}
@@ -43,6 +45,7 @@ function handleCardClicks() {}
 function showCards(user) {
   const card = document.createElement("li");
   card.classList.add("card");
+  card.dataset.uid = user.uid;
   card.innerHTML = `
     <img src="${user.avatar}" alt="${user.username}" />
     <div>
