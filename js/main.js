@@ -5,10 +5,19 @@ document.addEventListener("DOMContentLoaded", () => {
   //add click listener to #cards
   if ("serviceWorker" in navigator) {
     registerSW();
+  } else {
+    console.log("Service Worker not supported");
   }
-  window.addEventListener("popstate", () => {});
+
+  navigator.serviceWorker.addEventListener("message", receiveMessageFromSW);
+
   getData();
-  handleCardClicks();
+
+  document.getElementById("cards").addEventListener("click", handleCardClicks);
+
+  window.addEventListener("popstate", (ev) => {
+    console.log("Popstate event: ", ev);
+  });
 });
 
 const userList = document.getElementById("cards");
@@ -24,12 +33,10 @@ function getData() {
   const url = `https://random-data-api.com/api/v2/users?size=${size}`;
   caches.match("users.json").then((cachedResponse) => {
     if (cachedResponse) {
-      // console.log("Found users.json in cache");
+      // console.log("Found users.json in cache", cachedResponse);
       return cachedResponse.json().then((data) => {
-        userList.innerHTML = "";
-        data.forEach((user) => {
-          showCards(user);
-        });
+        // console.log("Display user data from cache");
+        displayUsers(data);
       });
     } else {
       fetch(url, { method: "GET", credentials: "omit" })
@@ -41,10 +48,7 @@ function getData() {
           return response.json();
         })
         .then((data) => {
-          userList.innerHTML = "";
-          data.forEach((user) => {
-            showCards(user);
-          });
+          displayUsers(data);
         })
         .catch((err) => {
           console.error("Fetch Error from main.js", err);
@@ -53,7 +57,19 @@ function getData() {
   });
 }
 
-function handleCardClicks() {}
+function handleCardClicks() {
+  const cards = document.querySelectorAll("#cards .card");
+  cards.forEach((card) => {
+    card.addEventListener("click", (ev) => {
+      const uid = ev.currentTarget.dataset.uid;
+      console.log("Card clicked: ", uid);
+      // send message to SW
+      let msg = { uid };
+      sendMessageToSW(msg);
+      changeURL(uid);
+    });
+  });
+}
 
 function showCards(user) {
   const card = document.createElement("li");
@@ -69,8 +85,24 @@ function showCards(user) {
   userList.appendChild(card);
 }
 
-function sendMessageToSW(uid, action) {
-  navigator.serviceWorker.controller.postMessage({ uid: uid, action: action });
+function displayUsers(data) {
+  userList.innerHTML = "";
+  data.forEach((user) => {
+    // console.log("Display user data", user);
+    showCards(user);
+  });
+}
+
+function sendMessageToSW(msg) {
+  navigator.serviceWorker.ready.then((reg) => {
+    reg.active.postMessage(msg);
+    // sending {msg}
+  });
 }
 
 function receiveMessageFromSW(ev) {}
+
+function changeURL(uid) {
+  let url = location.origin + `/index.html#${uid}`;
+  location.assign(url);
+}

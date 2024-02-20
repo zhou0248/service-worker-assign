@@ -1,4 +1,4 @@
-const version = "4";
+const version = "5";
 const cacheName = `Aiting-${version}`;
 const staticItems = ["./", "./css/main.css", "./js/main.js", "./index.html"];
 
@@ -16,6 +16,7 @@ self.addEventListener("activate", (ev) => {
   //clear old caches, if desired
   ev.waitUntil(
     caches.keys().then((keys) => {
+      // console.log("old caches have been cleared");
       return Promise.all(
         keys.filter((key) => key !== cacheName).map((key) => caches.delete(key))
         // gives us an array of promises
@@ -58,11 +59,21 @@ self.addEventListener("fetch", (ev) => {
   } else if (isUserData) {
     ev.respondWith(
       caches.match(request).then((cachedResponse) => {
-        // console.log("SW found USERDATA in cache: ", request);
+        // cachedResponse
+        //   ? console.log(
+        //       "SW found user data in cache: ",
+        //       request,
+        //       cachedResponse
+        //     )
+        //   : console.log("SW did not find user data in cache: ", request);
         return (
           cachedResponse ||
           fetch(request).then((fetchResponse) => {
-            // console.log("SW put USERDATA in cache: ", request);
+            // console.log(
+            //   "SW fetched and put user data in cache: ",
+            //   request,
+            //   fetchResponse
+            // );
             return caches.open(cacheName).then((cache) => {
               cache.put("users.json", fetchResponse.clone());
               return fetchResponse;
@@ -78,6 +89,7 @@ self.addEventListener("fetch", (ev) => {
 
 self.addEventListener("message", (ev) => {
   //listen for messages from the main thread
+  let data = ev.data;
 });
 
 function sendMessageToMain() {
