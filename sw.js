@@ -69,11 +69,11 @@ self.addEventListener("fetch", (ev) => {
         return (
           cachedResponse ||
           fetch(request).then((fetchResponse) => {
-            // console.log(
-            //   "SW fetched and put user data in cache: ",
-            //   request,
-            //   fetchResponse
-            // );
+            console.log(
+              "SW fetched and put user data in cache: ",
+              request,
+              fetchResponse
+            );
             return caches.open(cacheName).then((cache) => {
               cache.put("users.json", fetchResponse.clone());
               return fetchResponse;
@@ -90,11 +90,21 @@ self.addEventListener("fetch", (ev) => {
 self.addEventListener("message", (ev) => {
   //listen for messages from the main thread
   let data = ev.data;
+  // ev.source.id
+  // ev.data.func ev.data.uid
   console.log("SW received message: ", data);
+  sendMessageToMain(data, ev.source.id);
 });
 
-function sendMessageToMain() {
+function sendMessageToMain(message, clientid) {
   //send a message to the main threads of all clients
+  clients.matchAll().then((clients) => {
+    clients.forEach((client) => {
+      if (client.id !== clientid) {
+        client.postMessage(message);
+      }
+    });
+  });
 }
 
 function return404(err) {

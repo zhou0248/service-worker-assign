@@ -62,27 +62,30 @@ function handleCardClicks() {
   cards.forEach((card) => {
     card.addEventListener("click", (ev) => {
       const uid = ev.currentTarget.dataset.uid;
-      console.log("Card clicked: ", uid);
+      // console.log("Card clicked: ", uid);
       changeURL(uid);
       // send message to SW
-      let msg = { uid };
+      let msg = { uid: uid, func: "hideOtherCards" };
       sendMessageToSW(msg);
-      // hideOtherCards(uid);
+      return uid;
     });
   });
 }
 
 function showCards(user) {
-  const card = document.createElement("li");
-  card.classList.add("card");
-  card.dataset.uid = user.uid;
-  card.innerHTML = `
+  userList.innerHTML = "";
+  data.forEach((user) => {
+    const card = document.createElement("li");
+    card.classList.add("card");
+    card.dataset.uid = user.uid;
+    card.innerHTML = `
     <img src="${user.avatar}" alt="${user.username}" />
     <div>
       <h3>${user.username}</h3>
       <p>${user.email}</p>
     </div>
   `;
+  });
   userList.appendChild(card);
 }
 
@@ -100,7 +103,15 @@ function sendMessageToSW(msg) {
   });
 }
 
-function receiveMessageFromSW(ev) {}
+function receiveMessageFromSW(ev) {
+  //ev.data.func ev.data.uid
+  if ("func" in ev.data) {
+    if (typeof eval(ev.data.func) === "function") {
+      let f = eval(ev.data.func);
+      f(ev.data.uid);
+    }
+  }
+}
 
 function changeURL(uid) {
   let url = location.origin + `/index.html#${uid}`;
@@ -109,10 +120,10 @@ function changeURL(uid) {
 
 function changeColor() {}
 
-// function hideOtherCards(uid) {
-//   cards.forEach((card) => {
-//     if (card.dataset.uid !== uid) {
-//       card.classList.add("hidden");
-//     }
-//   });
-// }
+function hideOtherCards(uid) {
+  cards.forEach((card) => {
+    if (card.dataset.uid !== uid) {
+      card.classList.add("hidden");
+    }
+  });
+}
