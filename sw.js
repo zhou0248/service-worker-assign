@@ -90,6 +90,7 @@ self.addEventListener("fetch", (ev) => {
 self.addEventListener("message", (ev) => {
   //listen for messages from the main thread
   let data = ev.data;
+  console.log("SW received message: ", data);
 });
 
 function sendMessageToMain() {

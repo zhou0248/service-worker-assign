@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("cards").addEventListener("click", handleCardClicks);
 
   window.addEventListener("popstate", (ev) => {
-    console.log("Popstate event: ", ev);
+    // console.log("Popstate event: ", ev);
   });
 });
 
@@ -61,12 +61,12 @@ function handleCardClicks() {
   const cards = document.querySelectorAll("#cards .card");
   cards.forEach((card) => {
     card.addEventListener("click", (ev) => {
-      const uid = ev.currentTarget.dataset.uid;
       console.log("Card clicked: ", uid);
+      const uid = ev.currentTarget.dataset.uid;
+      changeURL(uid);
       // send message to SW
       let msg = { uid };
       sendMessageToSW(msg);
-      changeURL(uid);
     });
   });
 }
