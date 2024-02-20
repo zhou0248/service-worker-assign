@@ -61,12 +61,13 @@ function handleCardClicks() {
   const cards = document.querySelectorAll("#cards .card");
   cards.forEach((card) => {
     card.addEventListener("click", (ev) => {
-      console.log("Card clicked: ", uid);
       const uid = ev.currentTarget.dataset.uid;
+      console.log("Card clicked: ", uid);
       changeURL(uid);
       // send message to SW
       let msg = { uid };
       sendMessageToSW(msg);
+      // hideOtherCards(uid);
     });
   });
 }
@@ -96,7 +97,6 @@ function displayUsers(data) {
 function sendMessageToSW(msg) {
   navigator.serviceWorker.ready.then((reg) => {
     reg.active.postMessage(msg);
-    // sending {msg}
   });
 }
 
@@ -106,3 +106,13 @@ function changeURL(uid) {
   let url = location.origin + `/index.html#${uid}`;
   location.assign(url);
 }
+
+function changeColor() {}
+
+// function hideOtherCards(uid) {
+//   cards.forEach((card) => {
+//     if (card.dataset.uid !== uid) {
+//       card.classList.add("hidden");
+//     }
+//   });
+// }

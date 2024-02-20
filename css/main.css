@@ -16,3 +16,7 @@ body {
 .card {
   background-image: var(--background-img);
 }
+
+.hidden {
+  display: none;
+}
