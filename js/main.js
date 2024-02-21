@@ -72,11 +72,14 @@ function handleCardClicks() {
       const uid = ev.currentTarget.dataset.uid;
       // console.log("Card clicked: ", uid);
       changeURL(uid);
+      hideOtherCards(uid);
       // send message to SW
 
       let msg = { uid: uid, func: "changeURL" };
       sendMessageToSW(msg);
       // console.log("url changed by service worker");
+      msg = { uid: uid, func: "hideOtherCards" };
+      sendMessageToSW(msg);
 
       const color = pickAColor();
       let msg2 = { color: color, func: "changeColor" };
