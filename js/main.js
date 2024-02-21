@@ -15,9 +15,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("cards").addEventListener("click", handleCardClicks);
 
-  window.addEventListener("popstate", (ev) => {
-    // console.log("Popstate event: ", ev);
-  });
+  // window.addEventListener(
+  //   "popstate",
+  //   (ev) => {
+  //     const uid = location.hash.slice(1);
+  //     if (uid) {
+  //       changeURL(uid);
+  //       console.log("URL changed by popstate event");
+  //     }
+  //   }
+  //   // console.log("Popstate event: ", ev);
+  // );
+  // causes Uncaught RangeError: Maximum call stack size exceeded.
 });
 
 const userList = document.getElementById("cards");
@@ -64,8 +73,14 @@ function handleCardClicks() {
       // console.log("Card clicked: ", uid);
       changeURL(uid);
       // send message to SW
+
       let msg = { uid: uid, func: "changeURL" };
       sendMessageToSW(msg);
+      // console.log("url changed by service worker");
+
+      const color = pickAColor();
+      let msg2 = { color: color, func: "changeColor" };
+      sendMessageToSW(msg2);
       return uid;
     });
   });
@@ -99,11 +114,17 @@ function sendMessageToSW(msg) {
 
 function receiveMessageFromSW(ev) {
   //ev.data.func ev.data.uid
-  if ("func" in ev.data) {
-    if (typeof eval(ev.data.func) === "function") {
-      let f = eval(ev.data.func);
-      f(ev.data.uid);
-    }
+  if ("func" in ev.data && "uid" in ev.data) {
+    callFunc(ev.data.func, ev.data.uid);
+  } else if ("func" in ev.data && "color" in ev.data) {
+    callFunc(ev.data.func, ev.data.color);
+  }
+}
+
+function callFunc(funcName, arg) {
+  if (typeof eval(funcName) === "function") {
+    let f = eval(funcName);
+    f(arg);
   }
 }
 
@@ -112,12 +133,16 @@ function changeURL(uid) {
   location.assign(url);
 }
 
-function changeColor() {
-  const cards = document.querySelectorAll("#cards .card");
-  cards.forEach((card) => {
-    card.style.backgroundColor = "green";
-  });
+function changeColor(pickedColor) {
+  const headline = document.querySelector("h1");
+  headline.style.color = pickedColor;
 }
+
+function pickAColor() {
+  let pickedColor = "#" + Math.random().toString(16).substring(2, 8);
+  return pickedColor;
+}
+// reference https://www.youtube.com/watch?v=6wNt8B8aH80
 
 function hideOtherCards(uid) {
   const cards = document.querySelectorAll("#cards .card");
