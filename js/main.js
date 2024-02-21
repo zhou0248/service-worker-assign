@@ -36,7 +36,11 @@ function getData() {
       // console.log("Found users.json in cache", cachedResponse);
       return cachedResponse.json().then((data) => {
         // console.log("Display user data from cache");
-        displayUsers(data);
+        userList.innerHTML = "";
+        data.forEach((user) => {
+          // console.log("Display user data", user);
+          showCards(user);
+        });
       });
     } else {
       fetch(url, { method: "GET", credentials: "omit" })
@@ -48,7 +52,11 @@ function getData() {
           return response.json();
         })
         .then((data) => {
-          displayUsers(data);
+          userList.innerHTML = "";
+          data.forEach((user) => {
+            // console.log("Display user data", user);
+            showCards(user);
+          });
         })
         .catch((err) => {
           console.error("Fetch Error from main.js", err);
@@ -65,7 +73,7 @@ function handleCardClicks() {
       // console.log("Card clicked: ", uid);
       changeURL(uid);
       // send message to SW
-      let msg = { uid: uid, func: "hideOtherCards" };
+      let msg = { uid: uid, func: "changeURL" };
       sendMessageToSW(msg);
       return uid;
     });
@@ -73,19 +81,16 @@ function handleCardClicks() {
 }
 
 function showCards(user) {
-  userList.innerHTML = "";
-  data.forEach((user) => {
-    const card = document.createElement("li");
-    card.classList.add("card");
-    card.dataset.uid = user.uid;
-    card.innerHTML = `
+  const card = document.createElement("li");
+  card.classList.add("card");
+  card.dataset.uid = user.uid;
+  card.innerHTML = `
     <img src="${user.avatar}" alt="${user.username}" />
     <div>
       <h3>${user.username}</h3>
       <p>${user.email}</p>
     </div>
   `;
-  });
   userList.appendChild(card);
 }
 
