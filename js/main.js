@@ -24,8 +24,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const uid = location.hash.slice(1);
       if (uid) {
         hideOtherCards(uid);
-      } else {
-        showHiddenCards();
       }
     }
     // console.log("Popstate event: ", ev);
