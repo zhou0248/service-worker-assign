@@ -36,11 +36,7 @@ function getData() {
       // console.log("Found users.json in cache", cachedResponse);
       return cachedResponse.json().then((data) => {
         // console.log("Display user data from cache");
-        userList.innerHTML = "";
-        data.forEach((user) => {
-          // console.log("Display user data", user);
-          showCards(user);
-        });
+        showCards(data);
       });
     } else {
       fetch(url, { method: "GET", credentials: "omit" })
@@ -52,11 +48,7 @@ function getData() {
           return response.json();
         })
         .then((data) => {
-          userList.innerHTML = "";
-          data.forEach((user) => {
-            // console.log("Display user data", user);
-            showCards(user);
-          });
+          showCards(data);
         })
         .catch((err) => {
           console.error("Fetch Error from main.js", err);
@@ -64,7 +56,6 @@ function getData() {
     }
   });
 }
-
 function handleCardClicks() {
   const cards = document.querySelectorAll("#cards .card");
   cards.forEach((card) => {
@@ -80,7 +71,13 @@ function handleCardClicks() {
   });
 }
 
-function showCards(user) {
+function showCards(data) {
+  userList.innerHTML = "";
+  const cards = data.map((user) => createCard(user));
+  userList.append(...cards);
+}
+
+function createCard(user) {
   const card = document.createElement("li");
   card.classList.add("card");
   card.dataset.uid = user.uid;
@@ -91,15 +88,7 @@ function showCards(user) {
       <p>${user.email}</p>
     </div>
   `;
-  userList.appendChild(card);
-}
-
-function displayUsers(data) {
-  userList.innerHTML = "";
-  data.forEach((user) => {
-    // console.log("Display user data", user);
-    showCards(user);
-  });
+  return card;
 }
 
 function sendMessageToSW(msg) {
@@ -123,9 +112,15 @@ function changeURL(uid) {
   location.assign(url);
 }
 
-function changeColor() {}
+function changeColor() {
+  const cards = document.querySelectorAll("#cards .card");
+  cards.forEach((card) => {
+    card.style.backgroundColor = "green";
+  });
+}
 
 function hideOtherCards(uid) {
+  const cards = document.querySelectorAll("#cards .card");
   cards.forEach((card) => {
     if (card.dataset.uid !== uid) {
       card.classList.add("hidden");
