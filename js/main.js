@@ -14,7 +14,9 @@ document.addEventListener("DOMContentLoaded", () => {
   getData();
 
   document.getElementById("cards").addEventListener("click", handleCardClicks);
-
+  document
+    .getElementById("showList")
+    .addEventListener("click", showCardsOnAllPages);
   // window.addEventListener(
   //   "popstate",
   //   (ev) => {
@@ -75,15 +77,15 @@ function handleCardClicks() {
       hideOtherCards(uid);
       // send message to SW
 
-      let msg = { uid: uid, func: "changeURL" };
+      let msg = { arg: uid, func: "changeURL" };
       sendMessageToSW(msg);
       // console.log("url changed by service worker");
-      msg = { uid: uid, func: "hideOtherCards" };
+      msg = { arg: uid, func: "hideOtherCards" };
       sendMessageToSW(msg);
 
       const color = pickAColor();
-      let msg2 = { color: color, func: "changeColor" };
-      sendMessageToSW(msg2);
+      msg = { arg: color, func: "changeColor" };
+      sendMessageToSW(msg);
       return uid;
     });
   });
@@ -117,17 +119,13 @@ function sendMessageToSW(msg) {
 
 function receiveMessageFromSW(ev) {
   //ev.data.func ev.data.uid
-  if ("func" in ev.data && "uid" in ev.data) {
-    callFunc(ev.data.func, ev.data.uid);
-  } else if ("func" in ev.data && "color" in ev.data) {
-    callFunc(ev.data.func, ev.data.color);
-  }
-}
-
-function callFunc(funcName, arg) {
-  if (typeof eval(funcName) === "function") {
-    let f = eval(funcName);
-    f(arg);
+  if ("func" in ev.data && typeof eval(ev.data.func) === "function") {
+    let f = eval(ev.data.func);
+    if ("arg" in ev.data && typeof ev.data.arg !== "undefined") {
+      f(ev.data.arg);
+    } else {
+      f();
+    }
   }
 }
 
@@ -154,4 +152,12 @@ function hideOtherCards(uid) {
       card.classList.add("hidden");
     }
   });
+}
+function showCardsOnAllPages() {
+  const cards = document.querySelectorAll("#cards .card");
+  cards.forEach((card) => {
+    card.classList.remove("hidden");
+  });
+  let msg = { func: "showCardsOnAllPages" };
+  sendMessageToSW(msg);
 }
