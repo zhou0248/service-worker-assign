@@ -17,17 +17,19 @@ document.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("showList")
     .addEventListener("click", showCardsOnAllPages);
-  // window.addEventListener(
-  //   "popstate",
-  //   (ev) => {
-  //     const uid = location.hash.slice(1);
-  //     if (uid) {
-  //       changeURL(uid);
-  //       console.log("URL changed by popstate event");
-  //     }
-  //   }
-  //   // console.log("Popstate event: ", ev);
-  // );
+
+  window.addEventListener(
+    "popstate",
+    (ev) => {
+      const uid = location.hash.slice(1);
+      if (uid) {
+        hideOtherCards(uid);
+      } else {
+        showHiddenCards();
+      }
+    }
+    // console.log("Popstate event: ", ev);
+  );
   // causes Uncaught RangeError: Maximum call stack size exceeded.
 });
 
@@ -80,8 +82,8 @@ function handleCardClicks() {
       let msg = { arg: uid, func: "changeURL" };
       sendMessageToSW(msg);
       // console.log("url changed by service worker");
-      msg = { arg: uid, func: "hideOtherCards" };
-      sendMessageToSW(msg);
+      // msg = { arg: uid, func: "hideOtherCards" };
+      // sendMessageToSW(msg);
 
       const color = pickAColor();
       msg = { arg: color, func: "changeColor" };
@@ -153,11 +155,16 @@ function hideOtherCards(uid) {
     }
   });
 }
+
 function showCardsOnAllPages() {
+  showHiddenCards();
+  let msg = { func: "showCardsOnAllPages" };
+  sendMessageToSW(msg);
+}
+
+function showHiddenCards() {
   const cards = document.querySelectorAll("#cards .card");
   cards.forEach((card) => {
     card.classList.remove("hidden");
   });
-  let msg = { func: "showCardsOnAllPages" };
-  sendMessageToSW(msg);
 }
